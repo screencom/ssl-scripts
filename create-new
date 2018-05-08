@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Path to the letsencrypt tool
+LE_TOOL=/usr/bin/letsencrypt
+
+# Directory where the acme client puts the generated certs
+LE_OUTPUT=/etc/letsencrypt/live
+
+if [ -z "$1" ]; then
+	echo "Usage: $0 domain [domain2, ...]"
+	exit 1
+fi
+
+# Concat the requested domains
+DOMAINS=""
+for DOM in "$@"
+do
+    DOMAINS+=" -d $DOM"
+done
+
+	# --standalone-supported-challenges http-01 \
+# Create or renew certificate for the domain(s) supplied for this tool
+$LE_TOOL certonly --agree-tos --renew-by-default --standalone \
+	--preferred-challenges http \
+	--http-01-port 63443 \
+	$DOMAINS
+
+if [ -f $LE_OUTPUT/$1/fullchain.pem ]; then
+	# Cat the certificate chain and the private key together for haproxy
+	cat $LE_OUTPUT/$1/{fullchain.pem,privkey.pem} > /etc/haproxy/ssl/${1}.pem
+
+	echo "############################################################"
+	echo "service haproxy reload"
+	echo "############################################################"
+	echo ""
+else
+	echo "############################################################"
+	echo "!!!!!!!!!!!!!!!!! SSL CERT NOT GENERATED !!!!!!!!!!!!!!!!!!!"
+	echo "############################################################"
+fi
