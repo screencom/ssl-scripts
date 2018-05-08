@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+
+# Path to the letsencrypt tool
+LE_TOOL=/usr/bin/letsencrypt
+
+DOMAINS=$(ls -1 /etc/haproxy/ssl | sed 's/\.pem//')
+DONE=0
+
+renew() {
+	DOMAIN=$1
+	echo "Renew $DOMAIN"
+	# Create or renew certificate for the domain(s) supplied for this tool
+	$LE_TOOL --agree-tos --renew-by-default --standalone \
+		--standalone-supported-challenges http-01 --http-01-port 63443 certonly -d $DOMAIN
+
+	if [ $? -eq 0 ]; then
+		cat /etc/letsencrypt/live/${DOMAIN}/{fullchain.pem,privkey.pem} > /tmp/${DOMAIN}.pem
+		if [ -s /tmp/${DOMAIN}.pem ]; then
+			mv /tmp/${DOMAIN}.pem /etc/haproxy/ssl/${DOMAIN}.pem
+			((DONE++))
+		fi
+	fi
+}
+
+for DOMAIN in $DOMAINS; do
+	renew $DOMAIN
+done
+
+if [ $DONE -gt 0 ]; then
+	echo "############################################################"
+	echo "service haproxy reload"
+	echo "############################################################"
+	echo ""
+	echo "############################################################"
+	echo "post-creation"
+	echo "############################################################"
+fi
