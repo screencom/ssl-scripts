@@ -12,7 +12,7 @@ renew() {
 	echo "Renew $DOMAIN"
 	# Create or renew certificate for the domain(s) supplied for this tool
 	$LE_TOOL --agree-tos --renew-by-default --standalone \
-		--standalone-supported-challenges http-01 --http-01-port 63443 certonly -d $DOMAIN
+		--preferred-challenges http-01 --http-01-port 63443 certonly -d $DOMAIN
 
 	if [ $? -eq 0 ]; then
 		cat /etc/letsencrypt/live/${DOMAIN}/{fullchain.pem,privkey.pem} > /tmp/${DOMAIN}.pem
