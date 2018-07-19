@@ -18,9 +18,8 @@ do
     DOMAINS+=" -d $DOM"
 done
 
-	# --standalone-supported-challenges http-01 \
 # Create or renew certificate for the domain(s) supplied for this tool
-$LE_TOOL certonly --agree-tos --renew-by-default --standalone \
+$LE_TOOL certonly -m admin@screencom.eu --agree-tos --renew-by-default --standalone \
 	--preferred-challenges http \
 	--http-01-port 63443 \
 	$DOMAINS
