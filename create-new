@@ -30,6 +30,7 @@ if [ -f $LE_OUTPUT/$1/fullchain.pem ]; then
 
 	echo "############################################################"
 	echo "service haproxy reload"
+	echo "curl http://stats.screencom.eu:8080/check/${1}"
 	echo "############################################################"
 	echo ""
 else
